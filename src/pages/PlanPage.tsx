@@ -12,10 +12,15 @@ import { Map as MapIcon, List } from 'lucide-react';
 
 export const PlanPage: React.FC = () => {
   const navigate = useNavigate();
-  const { itinerary } = useTripStore();
+  const { itinerary, clientSlots } = useTripStore();
   const [selectedPlaceName, setSelectedPlaceName] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'timeline' | 'map'>('timeline');
   const [activeDay, setActiveDay] = useState(itinerary?.narrative[0]?.day_index ?? 1);
+  const [routeStats, setRouteStats] = useState<{distance: string; duration: string}[]>([]);
+
+  useEffect(() => {
+    setRouteStats([]);
+  }, [activeDay]);
 
   // Safety redirect
   useEffect(() => {
@@ -35,7 +40,16 @@ export const PlanPage: React.FC = () => {
     return activeDayData.items.filter(i => i.lat && i.lng).map(item => ({
       place_name: item.place_name,
       lat: item.lat,
-      lng: item.lng
+      lng: item.lng,
+      photo_url: item.photo_url,
+      photo_reference: item.photo_reference,
+      rating: item.rating,
+      review_count: item.review_count,
+      category: item.category,
+      address: item.address,
+      opening_hours: item.opening_hours,
+      selection_reason: item.selection_reason,
+      reservation_badge: item.reservation_badge,
     }));
   }, [itinerary, activeDay]);
 
@@ -108,6 +122,8 @@ export const PlanPage: React.FC = () => {
               handleSelectPlace(name, coords);
               if (window.innerWidth < 768) setActiveTab('map');
             }}
+            routeStats={routeStats}
+            transportSlot={clientSlots.find(s => s.field === 'transport')?.value}
           />
         </section>
 
@@ -118,6 +134,7 @@ export const PlanPage: React.FC = () => {
             selectedPlaceName={selectedPlaceName}
             onSelectPlace={(place) => setSelectedPlaceName(place?.place_name ?? null)}
             defaultCenter={defaultCenter}
+            onRouteComputed={setRouteStats}
           />
         </section>
       </main>

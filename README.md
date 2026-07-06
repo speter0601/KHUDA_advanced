@@ -1,47 +1,73 @@
-# Travel Buddy (AI Travel Planner) ✈️
+<div align="center">
+  <img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
+  <img src="https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+</div>
 
-Travel Buddy is an intelligent web application that automatically generates personalized travel itineraries by analyzing your KakaoTalk conversation exports. Simply upload your chat history with friends or family, and the AI will extract your travel destination, dates, budget, headcount, transport preferences, and wishlists to craft the perfect trip!
+<br />
+
+<div align="center">
+  <h1 align="center">✈️ Travel Buddy (AI Travel Planner)</h1>
+  <p align="center">
+    <strong>Turn your messy KakaoTalk chat history into a perfectly planned travel itinerary using AI!</strong>
+  </p>
+</div>
+
+---
+
+## 💡 About The Project
+
+**Travel Buddy** is an intelligent web application designed to eliminate the stress of travel planning. Planning a trip with friends often involves endless chat logs scattered with ideas about where to go, when to go, and what to eat. 
+
+With Travel Buddy, you simply upload your **KakaoTalk conversation export**, and the AI does the heavy lifting: extracting your destination, dates, budget, headcount, preferred transport, and wishlists to craft the perfect personalized trip.
 
 ## ✨ Key Features
 
-- **KakaoTalk Chat Parsing**: Upload a `.txt` or `.csv` export of your KakaoTalk chat. The app extracts text while respecting privacy.
-- **AI Slot Extraction**: Automatically identifies 7 key travel slots (Destination, Date, Budget, Headcount, Transport, Constraints, and Wishlist) based on the chat context.
-- **Interactive Chat Interface**: If any slots are missing or ambiguous, the AI will chat with you to clarify the details before generating the itinerary.
-- **Smart Itinerary Generation**: Uses AI to build a logical, day-by-day travel plan, taking your constraints and wishlists into account.
-- **Interactive Map View**: Visualizes your daily routes using the Google Maps API, including driving/transit directions.
-- **Modern UI**: Built with React and Tailwind CSS, featuring beautiful micro-animations, glassmorphism, and responsive layouts.
+- 💬 **KakaoTalk Chat Parsing**: Effortlessly upload a `.txt` or `.csv` export of your KakaoTalk chat. The app securely extracts text while respecting your privacy.
+- 🤖 **AI Slot Extraction**: Automatically identifies the 7 key travel pillars: `Destination`, `Date`, `Budget`, `Headcount`, `Transport`, `Constraints`, and `Wishlist`.
+- 🪄 **Interactive AI Chat Interface**: Missing some details? The built-in AI assistant will chat with you to clarify and finalize the parameters before locking in the plan.
+- 📅 **Smart Itinerary Generation**: Uses LLMs to build a highly logical, day-by-day travel plan, strictly adhering to your constraints (budget, time, travel distance).
+- 🗺 **Interactive Map & Routes**: Visualizes your daily routes using the **Google Maps API**. Click on markers to view rich detail cards (photos, ratings, hours) and see precise driving/transit distances on the map.
+- 💎 **Premium Modern UI**: Built with React and Tailwind CSS, featuring beautiful micro-animations, glassmorphism, responsive layouts, and a buttery-smooth user experience.
+
+---
 
 ## 🛠 Tech Stack
 
-- **Frontend Framework**: React 19 + Vite
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **Routing**: React Router
-- **Maps Integration**: `@react-google-maps/api` (Google Maps JS API & Directions API)
-- **Icons**: Lucide React
-- **HTTP Client**: Axios
+| Category | Technology |
+| :--- | :--- |
+| **Frontend Framework** | React 19, Vite, TypeScript |
+| **Styling & UI** | Tailwind CSS, Lucide React Icons |
+| **State Management** | Zustand |
+| **Routing** | React Router DOM |
+| **Map Engine** | `@react-google-maps/api` |
+| **Network** | Axios |
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
-You will need Node.js installed on your machine. You will also need a backend server or configure the app to run in mock mode.
+- Node.js installed on your machine
+- Google Maps API Key
+- OpenAI API Key (or equivalent LLM)
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
-   cd khuda_advanced
+   git clone https://github.com/speter0601/KHUDA_advanced.git
+   cd KHUDA_advanced
    ```
 
-2. Install dependencies:
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. Configure Environment Variables:
-   Create a `.env` file in the root directory and add the following keys (see `.env.example`):
+3. **Configure Environment Variables:**
+   Create a `.env` file in the root directory:
    ```env
    VITE_BACKEND_API_URL=http://127.0.0.1:8080
    VITE_LLM_API_URL=https://api.openai.com/v1
@@ -51,22 +77,33 @@ You will need Node.js installed on your machine. You will also need a backend se
    VITE_USE_MOCK=false
    ```
 
-4. Start the development server:
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
 
+---
+
 ## 🗺 Application Flow
 
-1. **Upload Phase**: Users drop their KakaoTalk chat export file. The app parses it client-side.
-2. **Chat & Slot Extraction**: The AI reviews the chat context and fills out travel parameters. Users can chat with the AI to refine or fill missing information.
-3. **Plan Generation**: Once all parameters are confirmed, an itinerary is generated containing day-by-day narratives and a structured list of places.
-4. **Map & Explore**: The generated plan is displayed on a beautifully styled timeline and an interactive Google Map with route visualization.
+1. **Upload Phase** 📤<br/>
+   Users drag-and-drop their KakaoTalk chat export file. The app parses it cleanly on the client-side.
+   
+2. **Chat & Slot Extraction** 💬<br/>
+   The AI reviews the chat context and fills out travel parameters. Users can chat directly with the AI to refine or fill missing information.
+
+3. **Plan Generation** 🪄<br/>
+   Once all parameters are confirmed, an itinerary is generated containing day-by-day narratives and a structured list of visited places.
+
+4. **Map & Explore** 📍<br/>
+   The generated plan is displayed on a beautifully styled vertical timeline and an interactive Google Map with rich route visualization.
+
+---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check issues page.
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/speter0601/KHUDA_advanced/issues).
 
 ## 📝 License
 
-This project is licensed under the MIT License.
+This project is licensed under the **MIT License**.

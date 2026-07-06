@@ -1,15 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { GoogleMap, useJsApiLoader, InfoWindow, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, InfoWindow, DirectionsService, DirectionsRenderer, OverlayView } from '@react-google-maps/api';
 import { type GeocodedPlace } from '../../types/trip';
 import useTripStore from '../../store/useTripStore';
-import { AlertCircle, MapPin } from 'lucide-react';
+import { AlertCircle, MapPin, Clock, Star } from 'lucide-react';
 import { PlanMarkers } from './PlanMarkers';
+
+function renderStars(rating: number) {
+  const rounded = Math.round(rating);
+  return (
+    <>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          className={`h-2.5 w-2.5 ${
+            i <= rounded ? 'fill-current' : 'fill-transparent stroke-slate-300'
+          }`}
+        />
+      ))}
+    </>
+  );
+}
 
 interface MapViewProps {
   geocodedPlaces: GeocodedPlace[];
   selectedPlaceName: string | null;
   onSelectPlace: (place: GeocodedPlace | null) => void;
   defaultCenter?: { lat: number; lng: number } | null;
+  onRouteComputed?: (legs: { distance: string; duration: string }[]) => void;
 }
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -132,10 +149,15 @@ function SimulationMap({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const MapView: React.FC<MapViewProps> = ({ geocodedPlaces, selectedPlaceName, onSelectPlace, defaultCenter }) => {
+export const MapView: React.FC<MapViewProps> = ({ geocodedPlaces, selectedPlaceName, onSelectPlace, defaultCenter, onRouteComputed }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [routeError, setRouteError] = useState(false);
+  const [routeLegs, setRouteLegs] = useState<{distance: string, duration: string, midpoint: {lat: number, lng: number}}[]>([]);
   const { clientSlots } = useTripStore();
+  
+  const onRouteComputedRef = React.useRef(onRouteComputed);
+  useEffect(() => { onRouteComputedRef.current = onRouteComputed; }, [onRouteComputed]);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -155,15 +177,40 @@ export const MapView: React.FC<MapViewProps> = ({ geocodedPlaces, selectedPlaceN
   // Clear directions when day/places change
   useEffect(() => {
     setDirections(null);
+    setRouteError(false);
+    setRouteLegs([]);
   }, [geocodedPlaces]);
 
   const directionsCallback = React.useCallback(
     (res: google.maps.DirectionsResult | null, status: google.maps.DirectionsStatus) => {
       if (res !== null) {
-        if (status === 'OK') {
+        if (status === 'OK' && res.routes[0]) {
           setDirections(res);
-        } else {
+          const legs = res.routes[0].legs.map(leg => {
+            // Find a better midpoint by taking the middle step of the leg if available,
+            // otherwise fallback to simple average of start/end.
+            const steps = leg.steps;
+            let midLat, midLng;
+            if (steps && steps.length > 0) {
+              const midStep = steps[Math.floor(steps.length / 2)];
+              midLat = midStep.start_location.lat();
+              midLng = midStep.start_location.lng();
+            } else {
+              midLat = (leg.start_location.lat() + leg.end_location.lat()) / 2;
+              midLng = (leg.start_location.lng() + leg.end_location.lng()) / 2;
+            }
+
+            return {
+              distance: leg.distance?.text || '',
+              duration: leg.duration?.text || '',
+              midpoint: { lat: midLat, lng: midLng },
+            };
+          });
+          setRouteLegs(legs);
+          onRouteComputedRef.current?.(legs.map(l => ({ distance: l.distance, duration: l.duration })));
+        } else if (status !== 'OK') {
           console.warn('Directions query failed:', status);
+          setRouteError(true);
         }
       }
     },
@@ -200,7 +247,8 @@ export const MapView: React.FC<MapViewProps> = ({ geocodedPlaces, selectedPlaceN
 
   const transportSlot = clientSlots.find(s => s.field === 'transport')?.value || '';
   const isDriving = transportSlot.includes('렌트카') || transportSlot.includes('차') || transportSlot.includes('택시');
-  const travelMode = isDriving ? window.google.maps.TravelMode.DRIVING : window.google.maps.TravelMode.TRANSIT;
+  // Fallback to DRIVING if not explicitly transit, as transit in Jeju often yields ZERO_RESULTS
+  const travelMode = window.google.maps.TravelMode.DRIVING;
 
   const hasRoute = geocodedPlaces.length >= 2;
   const origin = hasRoute ? { lat: geocodedPlaces[0].lat, lng: geocodedPlaces[0].lng } : null;
@@ -235,14 +283,89 @@ export const MapView: React.FC<MapViewProps> = ({ geocodedPlaces, selectedPlaceN
             position={{ lat: selectedPlace.lat, lng: selectedPlace.lng }}
             onCloseClick={() => onSelectPlace(null)}
           >
-            <div className="p-2 max-w-[220px]">
-              <p className="text-xs font-black text-slate-900">{selectedPlace.place_name}</p>
+            <div className="flex flex-col w-[240px] md:w-[260px] rounded-xl overflow-hidden bg-white text-left -m-1">
+              {/* Image Header */}
+              {selectedPlace.photo_url ? (
+                <img
+                  src={selectedPlace.photo_url}
+                  alt={selectedPlace.place_name}
+                  className="w-full h-28 object-cover bg-slate-100"
+                />
+              ) : (
+                <div className="w-full h-20 bg-slate-50 flex flex-col items-center justify-center text-slate-300 border-b border-slate-100">
+                  <MapPin className="h-6 w-6 mb-1" />
+                  <span className="text-[9px] uppercase font-bold tracking-wider">No Photo</span>
+                </div>
+              )}
+
+              <div className="p-3">
+                {/* Title and Category */}
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <h3 className="text-[13px] font-black text-slate-900 leading-tight">
+                    {selectedPlace.place_name}
+                  </h3>
+                  {selectedPlace.category && (
+                    <span className="flex-shrink-0 px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">
+                      {selectedPlace.category}
+                    </span>
+                  )}
+                </div>
+
+                {/* Rating */}
+                {selectedPlace.rating !== undefined && (
+                  <div className="flex items-center space-x-1 mb-2">
+                    <div className="flex text-sky-400">
+                      {renderStars(selectedPlace.rating)}
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-700">
+                      {selectedPlace.rating.toFixed(1)}
+                    </span>
+                    {selectedPlace.review_count !== undefined && (
+                      <span className="text-[9px] text-slate-400">({selectedPlace.review_count})</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Address & Hours */}
+                <div className="space-y-1.5 mb-2.5">
+                  {selectedPlace.address && (
+                    <div className="flex items-start text-[10px] text-slate-500">
+                      <MapPin className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-slate-400" />
+                      <span className="leading-tight">{selectedPlace.address}</span>
+                    </div>
+                  )}
+                  {selectedPlace.opening_hours && (
+                    <div className="flex items-start text-[10px] text-slate-500">
+                      <Clock className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-slate-400" />
+                      <span className="leading-tight">{selectedPlace.opening_hours}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Selection Reason */}
+                {selectedPlace.selection_reason && (
+                  <div className="border-t border-slate-100 pt-2 mb-2">
+                    <p className="text-[10px] text-slate-600 leading-relaxed line-clamp-3">
+                      {selectedPlace.selection_reason}
+                    </p>
+                  </div>
+                )}
+
+                {/* Reservation Badge */}
+                {selectedPlace.reservation_badge && (
+                  <div className="flex justify-start">
+                    <span className="px-2 py-0.5 border border-sky-200 text-sky-700 bg-sky-50 text-[9px] font-bold rounded-full">
+                      {selectedPlace.reservation_badge}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </InfoWindow>
         )}
 
         {/* Request Directions */}
-        {hasRoute && !directions && origin && destination && (
+        {hasRoute && !directions && !routeError && origin && destination && (
           <DirectionsService
             options={{
               origin,
@@ -256,17 +379,31 @@ export const MapView: React.FC<MapViewProps> = ({ geocodedPlaces, selectedPlaceN
 
         {/* Render Directions */}
         {directions && (
-          <DirectionsRenderer
-            directions={directions}
-            options={{
-              suppressMarkers: true,
-              polylineOptions: {
-                strokeColor: '#0ea5e9',
-                strokeOpacity: 0.8,
-                strokeWeight: 4,
-              },
-            }}
-          />
+          <>
+            <DirectionsRenderer
+              directions={directions}
+              options={{
+                suppressMarkers: true,
+                polylineOptions: {
+                  strokeColor: '#0ea5e9',
+                  strokeOpacity: 0.8,
+                  strokeWeight: 4,
+                },
+              }}
+            />
+            {/* Render Distance/Duration badges */}
+            {routeLegs.map((leg, idx) => (
+              <OverlayView
+                key={idx}
+                position={leg.midpoint}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+              >
+                <div className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-sm border border-slate-200 px-2.5 py-1 rounded-full shadow-sm flex items-center text-[10px] font-bold text-slate-700 whitespace-nowrap z-10 pointer-events-none">
+                  <span>{leg.distance} · {leg.duration}</span>
+                </div>
+              </OverlayView>
+            ))}
+          </>
         )}
       </GoogleMap>
     </div>

@@ -35,6 +35,13 @@ export interface ItemNarrativeOut {
   selection_reason: string | null;
   lat: number;
   lng: number;
+  photo_url?: string;
+  photo_reference?: string;
+  rating?: number;
+  review_count?: number;
+  category?: string;
+  address?: string;
+  opening_hours?: string;
 }
 
 export interface DayNarrativeOut {
@@ -72,6 +79,15 @@ export interface GeocodedPlace {
   place_name: string;
   lat: number;
   lng: number;
+  photo_url?: string;
+  photo_reference?: string;
+  rating?: number;
+  review_count?: number;
+  category?: string;
+  address?: string;
+  opening_hours?: string;
+  selection_reason?: string | null;
+  reservation_badge?: string;
 }
 
 /** Stored itinerary shape in Zustand */
