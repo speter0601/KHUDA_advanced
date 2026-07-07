@@ -16,11 +16,40 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [About The Project](#-about-the-project)
+- [Screenshots](#-screenshots)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Application Flow](#-application-flow)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+  <h3>✨ AI Chat Interface & Travel Information Extraction</h3>
+  <img src="./docs/chat-interface.png" alt="AI Chat Interface" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+  <p><em>Interact with the AI to refine travel details extracted from KakaoTalk chats.</em></p>
+  
+  <br/>
+
+  <h3>🗺️ Interactive Map & Day-by-Day Itinerary Generation</h3>
+  <img src="./docs/map-interface.png" alt="Interactive Map" width="800" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+  <p><em>View your personalized day-by-day itinerary with an interactive Google Maps integration.</em></p>
+</div>
+
+---
+
 ## 💡 About The Project
 
 **Travel Buddy** is an intelligent web application designed to eliminate the stress of travel planning. Planning a trip with friends often involves endless chat logs scattered with ideas about where to go, when to go, and what to eat. 
 
-With Travel Buddy, you simply upload your **KakaoTalk conversation export**, and the AI does the heavy lifting: extracting your destination, dates, budget, headcount, preferred transport, and wishlists to craft the perfect personalized trip.
+With Travel Buddy, you simply upload your **KakaoTalk conversation export**, and the AI does the heavy lifting: extracting your destination, dates, budget, headcount, preferred transport, and wishlists to craft the perfect personalized trip. It transforms chaotic chat histories into a beautifully structured, visual, and actionable travel itinerary.
 
 ## ✨ Key Features
 
